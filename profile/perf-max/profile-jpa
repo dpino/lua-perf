@@ -1,0 +1,36 @@
+| non-localized | localized |
+| 1.000000 | 1.105995 |
+| 0.904164 | 1.000000 |
+
+| non-localized | localized |
+| 1.000000 | 5.800407 |
+| 0.172402 | 1.000000 |
+
+
+====== ./bench.lua ======
+@@ 23 @@
+      |    times = times or 100000000
+      |    local begin = os.clock()
+      |    for i=1, times do
+  21% |       f(i)
+      |    end
+      |    local finish = os.clock()
+      |    return finish - begin
+
+====== ./perf-max ======
+@@ 39 @@
+      |    -- Non-localize function
+      |    result["non-localized"] = iterate_times(function(value)
+      |       for i=1, 10000 do
+  67% |          math.max(value, y)
+      |       end
+      |    end, 10000)
+      | 
+@@ 48 @@
+      |    -- Localize function
+      |    result["localized"] = iterate_times(function(value)
+      |       for i=1, 10000 do
+  12% |          max(value, y)
+      |       end
+      |    end, 10000)
+      | 

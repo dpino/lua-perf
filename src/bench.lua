@@ -65,7 +65,7 @@ function make_grid(data, keys)
       local row = {}
       for j=1,#keys do
          local k2 = keys[j]
-         table.insert(row, data[k2]/data[k1])
+         table.insert(row, data[k1]/data[k2])
       end
       table.insert(grid, row)
    end
