@@ -15,14 +15,16 @@ local function testLocalize()
 
    -- Non-localize function
    result["non-localized"] = iterate_times(function(value)
-      math.max(value, y)
+      local result = math.max(value, y)
+      value = x + result
    end, 100000000)
 
    jit.flush()
 
    -- Localize function
    result["localized"] = iterate_times(function(value)
-      max(value, y)
+      local result = max(value, y)
+      value = x + result
    end, 100000000)
 
    return result
@@ -32,14 +34,15 @@ local function testLocalize2()
    local result = {}
 
    local max = math.max
-   local x, y = 1, -1
 
    jit.flush()
 
    -- Non-localize function
    result["non-localized"] = iterate_times(function(value)
+      local x, y = 1, -1
       for i=1, 10000 do
-         math.max(value, y)
+         local result = math.max(value, y)
+         value = x + result
       end
    end, 10000)
 
@@ -47,8 +50,10 @@ local function testLocalize2()
 
    -- Localize function
    result["localized"] = iterate_times(function(value)
+      local x, y = 1, -1
       for i=1, 10000 do
-         max(value, y)
+         local result = max(value, y)
+         value = x + result
       end
    end, 10000)
 
