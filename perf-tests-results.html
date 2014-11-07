@@ -1,0 +1,174 @@
+<i>-- Test 1. Localize.</i>
+   <table>
+      <thead>
+         <tr><th>non-localized</th>
+<th>localized</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>1.030179</td></tr>
+<tr><td>0.970705</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 2. Localize class methods.</i>
+   <table>
+      <thead>
+         <tr><th>non-localized</th>
+<th>localized</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>1.009263</td></tr>
+<tr><td>0.990822</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 3. Unpack a table.</i>
+   <table>
+      <thead>
+         <tr><th>unpack</th>
+<th>non-unpack</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>22.153256</td></tr>
+<tr><td>0.045140</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 4. Determine Maximum and Set It.</i>
+   <table>
+      <thead>
+         <tr><th>max-and-set</th>
+<th>local-max-and-set</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>1.031411</td></tr>
+<tr><td>0.969545</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 5. Nil check.</i>
+   <table>
+      <thead>
+         <tr><th>nil-check</th>
+<th>use-or</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>1.031939</td></tr>
+<tr><td>0.969050</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 6. Pow.</i>
+   <table>
+      <thead>
+         <tr><th>pow-operator</th>
+<th>multiplication</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>0.998014</td></tr>
+<tr><td>1.001990</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 7. Modulus operator.</i>
+   <table>
+      <thead>
+         <tr><th>math-modulus</th>
+<th>modulus-operator</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>4.092878</td></tr>
+<tr><td>0.244327</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 8. Functions as param for other functions.</i>
+   <table>
+      <thead>
+         <tr><th>non-localized-function</th>
+<th>localized-function</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>0.981485</td></tr>
+<tr><td>1.018865</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 9. Iterators.</i>
+   <table>
+      <thead>
+         <tr><th>pairs</th>
+<th>ipairs</th>
+<th>indexing</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>1.584762</td>
+<td>1.383580</td></tr>
+<tr><td>0.631010</td>
+<td>1.000000</td>
+<td>0.873052</td></tr>
+<tr><td>0.722762</td>
+<td>1.145407</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 10. Array access vs Object access.</i>
+   <table>
+      <thead>
+         <tr><th>array_access</th>
+<th>object_access</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>0.966143</td></tr>
+<tr><td>1.035043</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 11. Buffered table item access.</i>
+   <table>
+      <thead>
+         <tr><th>non-buffering</th>
+<th>buffering</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>1.002973</td></tr>
+<tr><td>0.997036</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
+<i>-- Test 12. Adding table items.</i>
+   <table>
+      <thead>
+         <tr><th>table_insert</th>
+<th>table_index</th></tr>
+      </thead>
+      <tbody>
+         <tr><td>1.000000</td>
+<td>5.697385</td></tr>
+<tr><td>0.175519</td>
+<td>1.000000</td></tr>
+      </tbody>
+   </table>
+   
