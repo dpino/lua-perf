@@ -8,61 +8,36 @@ local make_grid, print_table  = bench.make_grid, bench.print_table
 local function testLocalize()
    local result = {}
 
-   local max = math.max
-   local x, y = 1, -1
-
    jit.flush()
 
-   -- Non-localize function
-   result["non-localized"] = iterate_times(function(value)
-      local result = math.max(value, y)
-      value = x + result
-   end, 100000000)
-
-   jit.flush()
-
-   -- Localize function
-   result["localized"] = iterate_times(function(value)
-      local result = max(value, y)
-      value = x + result
-   end, 100000000)
-
-   return result
-end
-
-local function testLocalize2()
-   local result = {}
-
-   local max = math.max
-
-   jit.flush()
-
-   -- Non-localize function
-   result["non-localized"] = iterate_times(function(value)
-      local x, y = 1, -1
+   -- Non-localized function
+   result["non-localized"] = iterate_times(function()
+      local result = 0
       for i=1, 10000 do
-         local result = math.max(value, y)
-         value = x + result
+         local value = math.max(i, result)
+         if result < value then
+            result = i
+         end
       end
+      return result
    end, 10000)
 
    jit.flush()
 
-   -- Localize function
-   result["localized"] = iterate_times(function(value)
-      local x, y = 1, -1
+   -- Localized function
+   result["localized"] = iterate_times(function()
+      local max = math.max
+      local result = 0
       for i=1, 10000 do
-         local result = max(value, y)
-         value = x + result
+         local value = max(i, result)
+         if result < value then
+            result = i
+         end
       end
+      return result
    end, 10000)
 
    return result
 end
 
-local function runTests()
-   print_table(make_grid(testLocalize(), {'non-localized', 'localized'}))
-   print_table(make_grid(testLocalize2(), {'non-localized', 'localized'}))
-end
-
-runTests()
+print_table(make_grid(testLocalize(), {'non-localized', 'localized'}))
