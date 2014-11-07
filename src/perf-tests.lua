@@ -16,27 +16,33 @@ local data = {}
 local function testLocalize()
    local result = {}
 
-   local x, y = 1, -1
-
    jit.flush()
 
-   -- Localize function
-   result["localized"] = iterate_times(function(value)
-      local max = math.max
+   -- Non-localized function
+   result["non-localized"] = iterate_times(function()
+      local result = 0
       for i=1, 10000 do
-         local result = max(value, y)
-         value = x + result
+         local value = math.max(i, result)
+         if result < value then
+            result = i
+         end
       end
+      return result
    end, 10000)
 
    jit.flush()
 
-   -- Non-localize function
-   result["non-localized"] = iterate_times(function(value)
+   -- Localized function
+   result["localized"] = iterate_times(function()
+      local max = math.max
+      local result = 0
       for i=1, 10000 do
-         local result = math.max(value, y)
-         value = x + result
+         local value = max(i, result)
+         if result < value then
+            result = i
+         end
       end
+      return result
    end, 10000)
 
    return result
@@ -57,20 +63,15 @@ local function testLocalizeClassMethods()
    end
 
    local object = MyClass.new(2)
-   local pow = object.pow
 
    -- Localize function
    result["localized"] = iterate_times(function(a)
       local result = 0
+      local pow = object.pow
       for i=1,10000 do
          local x = pow(object)
          local y = pow(object)
          local z = pow(object)
-         --[[
-         local x = object:pow()
-         local y = object:pow()
-         local z = object:pow()
-         --]]
          result = result + (x + y + z)
       end
       return result
@@ -102,21 +103,33 @@ local function testUnpack()
    local a = { 100, 200, 50, 75 }
 
    -- Unpack function
-   result["unpack"] = iterate_times(function(value)
+   result["unpack"] = iterate_times(function()
+      local result
       for i=1, 10000 do
-         local result = math.min(unpack(a))
-         result = result + value
+         result = math.min(unpack(a))
+         result = result + i
       end
+      return result
    end, 10000)
 
    jit.flush()
 
-   -- Non-unpack function
-   result["non-unpack"] = iterate_times(function(value)
+   local a = (function()
+      local result = {}
       for i=1, 10000 do
-         local result = math.min(a[1], a[2], a[3], a[4])
-         result = result + value
+         result[i] = i
       end
+      return result
+   end)()
+
+   -- Non-unpack function
+   result["non-unpack"] = iterate_times(function()
+      local result
+      for i=1, 10000-4 do
+         result = math.min(a[i], a[i+1], a[i+2], a[i+3])
+         result = result + i
+      end
+      return result
    end, 10000)
 
    return result
@@ -128,26 +141,33 @@ end
 local function testDetermineMaximumAndSetIt()
    local result = {}
 
-   local max = math.max
-   local random = math.random
+   local array = (function()
+      local result = {}
+      for i=1, 10000 do
+         result[i] = math.floor(math.random(i)*10000)
+      end
+      return result
+   end)()
 
    -- Max and set
-   result["max-and-set"] = iterate_times(function(value)
-      for i=1, 10000 do
-         local val = max(random(value), value)
-         value = val + value
+   result["max-and-set"] = iterate_times(function()
+      local max = math.max
+      local result = 0
+      for _, value in ipairs(array) do
+         result = max(result, value)
       end
+      return result
    end, 10000)
 
    jit.flush()
 
    -- Local max and set
-   result["local-max-and-set"] = iterate_times(function(value)
-      for i=1, 10000 do
-         local r = random(value)
-         if r > value then value = r end
-         value = value + value
+   result["local-max-and-set"] = iterate_times(function()
+      local result = 0
+      for _, value in ipairs(array) do
+         if value > result then result = value end
       end
+      return result
    end, 10000)
 
    return result
@@ -160,28 +180,37 @@ local function testNilCheck()
    local result = {}
 
    local max = math.max
-   local random = math.random
+
+   local array = (function()
+      local result = {}
+      for i=1, 10000 do
+         result[i] = math.floor(math.random(i)*10000)
+      end
+      return result
+   end)()
 
    -- Max and set
-   result["nil-check"] = iterate_times(function(value)
-      for i=1, 10000 do
-         local y, x
-         if random() > 0.5 then y = 1 end
-         if y == nil then x = 1 else x = y end
-         x = x * value
+   result["nil-check"] = iterate_times(function()
+      local result = 0
+      for _, value in ipairs(array) do
+         local y
+         if value > 0.5 then y = 1 end
+         if not y then result = 1 else result = y end
       end
+      return result
    end, 10000)
 
    jit.flush()
 
    -- Local max and set
-   result["use-or"] = iterate_times(function(value)
-      for i=1, 10000 do
+   result["use-or"] = iterate_times(function()
+      local result, value = 0, 0
+      for _, value in ipairs(array) do
          local y
-         if random() > 0.5 then y = 1 end
-         local x = y or 1
-         x = x * value
+         if value > 0.5 then y = 1 end
+         result = y or 1
       end
+      return result
    end, 10000)
 
    return result
@@ -193,24 +222,32 @@ end
 local function testPow()
    local result = {}
 
-   local x = 13
+   local array = (function()
+      local result = {}
+      for i=1, 10000 do
+         result[i] = math.floor(math.random(i)) % 3
+      end
+      return result
+   end)()
 
    -- Pow operator
-   result["pow-operator"] = iterate_times(function(value)
-      for i=1, 10000 do
-         local y = x^2
-         y = y * value
+   result["pow-operator"] = iterate_times(function()
+      local result = 0
+      for _, value in ipairs(array) do
+         result = result + (value^2)
       end
+      return result
    end, 10000)
 
    jit.flush()
 
    -- Multiplication
-   result["multiplication"] = iterate_times(function(value)
-      for i=1, 10000 do
-         local y = x * x
-         y = y * value
+   result["multiplication"] = iterate_times(function()
+      local result = 0
+      for _, value in ipairs(array) do
+         result = result + (value*value)
       end
+      return result
    end, 10000)
 
    return result
@@ -225,28 +262,32 @@ local function testModulus()
    jit.flush()
 
    -- Math modulus
-   result["math-modulus"] = iterate_times(function(val)
+   result["math-modulus"] = iterate_times(function()
       local fmod = math.fmod
+      local result = 0
       for i=1,10000 do
          local x = 1
-         if fmod(val, 30) < 1 then
+         if fmod(i, 30) < 1 then
             x = 2
          end
-         val = val * x
+         result = result * x
       end
+      return result
    end, 10000)
 
    jit.flush()
 
    -- Modulus operator
-   result["modulus-operator"] = iterate_times(function(val)
+   result["modulus-operator"] = iterate_times(function()
+      local result = 0
       for i=1,10000 do
          local x = 1
-         if val % 30 < 1 then
+         if i % 30 < 1 then
             x = 2
          end
-         val = val * x
+         result = result * x
       end
+      return result
    end, 10000)
 
 
@@ -259,19 +300,25 @@ end
 local function testFunctionAsParam()
    local result = {}
 
+   local MAX = 1000
+   local array = (function()
+      local result = {}
+      for i=1, MAX do
+         result[i] = math.floor(math.random(i)) % 10
+      end
+      return result
+   end)()
    local func1 = function(a,b,func)
       return func(a+b)
-   end
-   local func2 = function(a)
-      return a*2
    end
 
    -- Non localized function
    result["non-localized-function"] = iterate_times(function()
       local result = 1
-      for i=1,10000 do
-         local x = func1(1, 2, function(val) return val*2 end)
-         result = result * x
+      for i=1,MAX-1 do
+         local val1, val2 = array[i], array[i+1]
+         local x = func1(val1, val2, function(val) return val*2 end)
+         result = result + x
       end
       return result
    end, 10000)
@@ -281,9 +328,13 @@ local function testFunctionAsParam()
    -- Localized function
    result["localized-function"] = iterate_times(function()
       local result = 1
-      for i=1,10000 do
-         local x = func1(1, 2, func2)
-         result = result * x
+      for i=1,MAX-1 do
+         local func2 = function(a)
+            return a*2
+         end
+         local val1, val2 = array[i], array[i+1]
+         local x = func1(val1, val2, func2)
+         result = result + x
       end
       return result
    end, 10000)
@@ -349,7 +400,7 @@ local function testArrayAccessVSObjectAccess()
       for i=1,10000 do
          table.insert(result, a["foo"])
       end
-      return result 
+      return result
    end, 10000)
 
    jit.flush()
@@ -360,7 +411,7 @@ local function testArrayAccessVSObjectAccess()
       for i=1,10000 do
          table.insert(result, a.foo)
       end
-      return result 
+      return result
    end, 10000)
 
    return result
@@ -374,7 +425,7 @@ local function testBufferedTableItemAccess()
 
    local a = (function()
       local result = {}
-      for i=1,100 do
+      for i=1,10000 do
          result[i] = { x = i }
       end
       return result
@@ -387,7 +438,7 @@ local function testBufferedTableItemAccess()
       for i=1,#a do
          a[i].x = a[i].x + 1
       end
-   end, 1000000)
+   end, 10000)
 
    jit.flush()
 
@@ -397,7 +448,7 @@ local function testBufferedTableItemAccess()
          local y = a[i]
          y.x = y.x + 1
       end
-   end, 1000000)
+   end, 10000)
 
    return result
 end
@@ -416,7 +467,7 @@ local function testTableInsert()
       for i=1,10000 do
          table.insert(result, i)
       end
-      return result 
+      return result
    end, 10000)
 
    jit.flush()
@@ -426,41 +477,41 @@ local function testTableInsert()
    -- Table index
    result["table_index"] = iterate_times(function(value)
       local result = {}
-      local size = 0
+      local size = 1
       for i=1,10000 do
-         size = size + 1
          result[size] = i
+         size = size + 1
       end
-      return result 
+      return result
    end, 10000)
 
    return result
 end
 
 local function runTests()
-   print("-- Test 1. Localize.")
+   print("<i>-- Test 1. Localize.</i>")
    print_table(make_grid(testLocalize(), {'non-localized', 'localized'}))
-   print("-- Test 2. Localize class methods.")
+   print("<i>-- Test 2. Localize class methods.</i>")
    print_table(make_grid(testLocalizeClassMethods(), {'non-localized', 'localized'}))
-   print("-- Test 3. Unpack a table.")
+   print("<i>-- Test 3. Unpack a table.</i>")
    print_table(make_grid(testUnpack(), {'unpack', 'non-unpack'}))
-   print("-- Test 4. Determine Maximum and Set It.")
+   print("<i>-- Test 4. Determine Maximum and Set It.</i>")
    print_table(make_grid(testDetermineMaximumAndSetIt(), {'max-and-set', 'local-max-and-set'}))
-   print("-- Test 5. Nil check.")
+   print("<i>-- Test 5. Nil check.</i>")
    print_table(make_grid(testNilCheck(), {'nil-check', 'use-or'}))
-   print("-- Test 6. Pow.")
+   print("<i>-- Test 6. Pow.</i>")
    print_table(make_grid(testPow(), {'pow-operator', 'multiplication'}))
-   print("-- Test 7. Modulus operator.")
+   print("<i>-- Test 7. Modulus operator.</i>")
    print_table(make_grid(testModulus(), {'math-modulus', 'modulus-operator'}))
-   print("-- Test 8. Functions as param for other functions.")
+   print("<i>-- Test 8. Functions as param for other functions.</i>")
    print_table(make_grid(testFunctionAsParam(), {'non-localized-function', 'localized-function'}))
-   print("-- Test 9. Iterators.")
+   print("<i>-- Test 9. Iterators.</i>")
    print_table(make_grid(testIterators(), {'pairs', 'ipairs', 'indexing'}))
-   print("-- Test 10. Array access vs Object access.")
+   print("<i>-- Test 10. Array access vs Object access.</i>")
    print_table(make_grid(testArrayAccessVSObjectAccess(), {'array_access', 'object_access'}))
-   print("-- Test 11. Buffered table item access.")
+   print("<i>-- Test 11. Buffered table item access.</i>")
    print_table(make_grid(testBufferedTableItemAccess(), {'non-buffering', 'buffering'}))
-   print("-- Test 12. Adding table items.")
+   print("<i>-- Test 12. Adding table items.</i>")
    print_table(make_grid(testTableInsert(), {'table_insert', 'table_index'}))
 end
 

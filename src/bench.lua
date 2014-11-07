@@ -30,25 +30,40 @@ function iterate_times(f, times)
 end
 
 function print_table(t, header)
-   local function print_row(row, pattern)
-      io.write(("| "..pattern.." |"):format(row[1]))
-      for i=2, #row do
-         io.write(string.format((" "..pattern.." |"):format(row[i])))
+   local function wrap(tag, value)
+      return ("<%s>%s</%s>"):format(tag, value, tag)
+   end
+   local function row(data, tag, pattern)
+      tag = tag or "td"
+      local result = {}
+      for i=1, #data do
+         table.insert(result, wrap(tag, (pattern):format(data[i])))
       end
-      io.write("\n")
+      return table.concat(result, "\n")
    end
-   local function print_datarow(header)
-      print_row(header, "%.6f")
+   local function datarow(data)
+      return wrap("tr", row(data, "td", "%.6f"))
    end
-   local function print_header(header)
-      print_row(header, "%s")
+   local function header(data)
+      return wrap("tr", row(data, "th", "%s"))
    end
 
-   print_header(t[1])
+   local datarows = {}
    for i=2, #t do
-      print_datarow(t[i])
+      table.insert(datarows, datarow(t[i]))
    end
-   io.write("\n")
+
+   print(([[
+   <table>
+      <thead>
+         %s
+      </thead>
+      <tbody>
+         %s
+      </tbody>
+   </table>
+   ]]
+   ):format(header(t[1]), table.concat(datarows, "\n")))
 end
 
 function make_grid(data, keys)
@@ -69,6 +84,6 @@ function make_grid(data, keys)
       end
       table.insert(grid, row)
    end
-   
+
    return grid
 end
